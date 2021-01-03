@@ -27,8 +27,8 @@ def compute_simon_vector(input_tokens, positive_lexicon_words, negative_lexicon_
             for j in range(len(negative_lexicon_words)):
                 similarity_matrix[i, len(positive_lexicon_words) + j] = wns.word_similarity(input_tokens[i], negative_lexicon_words[j][0], 'wpath')
 
-    # sns.heatmap(similarity_matrix, xticklabels=positive_lexicon_words+negative_lexicon_words, yticklabels=input_tokens)
-    # plt.show()
+    sns.heatmap(similarity_matrix, xticklabels=positive_lexicon_words+negative_lexicon_words, yticklabels=input_tokens)
+    plt.show()
 
     return np.max(similarity_matrix, axis=0)
 
