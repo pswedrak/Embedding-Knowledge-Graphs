@@ -27,6 +27,28 @@ def load_reviews(path, size):
     return reviews
 
 
+def store_reviews(reviews, filename):
+    with open(filename, 'w') as file:
+        for review in reviews:
+            file.write(str(review.text))
+            file.write('\n')
+            file.write(str(review.stars))
+            file.write('\n')
+
+
+def read_reviews(filename):
+    reviews = []
+    with open(filename, 'r') as file:
+        line = file.readline()
+        while len(line) > 0:
+            stars = file.readline()
+            tokens = list(map(lambda x: x.lstrip()[1:-1], line[1:-2].split(",")))
+            review = Review(float(stars[:3]), tokens)
+            line = file.readline()
+            reviews.append(review)
+    return reviews
+
+
 def prepare_data_sets(reviews):
     train_data = []
     train_labels = []

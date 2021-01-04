@@ -59,10 +59,10 @@ def process_directory(directory):
     return texts
 
 
-def process_corpus(texts):
+def process_corpus(reviews):
     corpus = set()
-    for text in texts:
-        corpus.update(text)
+    for review in reviews:
+        corpus.update(review.text)
     return corpus
 
 
