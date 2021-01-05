@@ -9,7 +9,9 @@ class Review:
     def __init__(self, stars, text):
         self.stars = stars
         self.text = text
-        self.embedding = None
+        self.simon_embedding = None
+        self.doc2vec_embedding = None
+        self.word2vec_embedding = None
 
     def __str__(self):
         return "text: " + str(self.text[:50]) + ", stars: " + str(self.stars)

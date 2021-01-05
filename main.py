@@ -17,7 +17,7 @@ def main():
     # reviews = load_reviews(YELP_DATASET_PATH, 1000)
     # store_reviews(reviews, STORE_REVIEW_TOKENS_PATH)
     reviews = read_reviews(STORE_REVIEW_TOKENS_PATH)
-    train_data, test_data, train_labels, test_labels = prepare_data_sets(reviews)
+    # train_data, test_data, train_labels, test_labels = prepare_data_sets(reviews)
     # documents = [TaggedDocument(doc.text, [i]) for i, doc in enumerate(train_data + test_data)]
     # doc2vec_model = Doc2Vec(documents, vector_size=100, window=3, min_count=2)
     #
@@ -31,29 +31,35 @@ def main():
 
     # generate_word2vec(train_data)
 
-    size = 20
+    # size = 20
     # neg_texts = process_directory("results/reviews/neg")
     # pos_texts = process_directory("results/reviews/pos")
     # corpus = process_corpus(reviews)
     # print(corpus)
     # extract_lexicon_words(corpus, size,
     #                       "results/lexicon/positive_lexicon.txt", "results/lexicon/negative_lexicon.txt")
-    pos_words, polarity = load_lexicon_words("results/lexicon/positive_lexicon.txt")
-    neg_words, polarity = load_lexicon_words("results/lexicon/negative_lexicon.txt")
+    # pos_words, polarity = load_lexicon_words("results/lexicon/positive_lexicon.txt")
+    # neg_words, polarity = load_lexicon_words("results/lexicon/negative_lexicon.txt")
     # print(compute_simon_vector(neg_texts[0][:30], pos_words, neg_words, size))
 
-    with open("results/review_simon.txt", "w") as file:
-        for review in reviews:
-            print(review)
-            simon_vector = compute_simon_vector(review.text, pos_words, neg_words, size)
-            file.write(str(simon_vector.tolist()))
-            file.write('\n')
+    # with open("results/review_simon.txt", "w") as file:
+    #     for review in reviews:
+    #         print(review)
+    #         simon_vector = compute_simon_vector(review.text, pos_words, neg_words, size)
+    #         file.write(str(simon_vector.tolist()))
+    #         file.write('\n')
 
     # with open("results/simons/neg.txt", "w") as file:
     #     for neg_text in neg_texts:
     #         simon_vector = compute_simon_vector(neg_text, pos_words, neg_words, size)
     #         for num in simon_vector:
     #             file.write(str(num) + " ")
+    #         file.write('\n')
+
+    # vectors = generate_word2vec(reviews)
+    # with open('results/review_word2vec.txt', 'w') as file:
+    #     for vector in vectors:
+    #         file.write(str(vector))
     #         file.write('\n')
 
 
