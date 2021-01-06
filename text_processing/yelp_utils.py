@@ -13,9 +13,6 @@ class Review:
         self.doc2vec_embedding = None
         self.word2vec_embedding = None
 
-    def __str__(self):
-        return "text: " + str(self.text[:50]) + ", stars: " + str(self.stars)
-
 
 def load_reviews(path, size):
     reviews = []
@@ -74,3 +71,29 @@ def prepare_data_sets(reviews):
                 test_labels.append(1)
 
     return train_data, test_data, train_labels, test_labels
+
+
+def load_reviews(tokens_file, simon_file, word2vec_file, doc2vec_file):
+    reviews = read_reviews('../' + tokens_file)
+    simon_vectors = load_vectors('../' + simon_file)
+    word2vec = load_vectors('../' + word2vec_file)
+    doc2vec = load_vectors('../' + doc2vec_file)
+
+    for i in range(len(reviews)):
+        reviews[i].simon_embedding = simon_vectors[i]
+        reviews[i].word2vec_embedding = word2vec[i]
+        reviews[i].doc2vec_embedding = doc2vec[i]
+
+    return reviews
+
+
+def load_vectors(filepath):
+    vectors = []
+    with open(filepath, 'r') as file:
+        for line in file.readlines():
+            vector = []
+            for num in line[1:-2].split(', '):
+                vector.append(float(num))
+            vectors.append(vector)
+    return vectors
+
