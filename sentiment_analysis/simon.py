@@ -37,6 +37,11 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name):
     positive_synsets = {}
     negative_synsets = {}
 
+    pos_words = []
+    neg_words = []
+    pos_polarity = []
+    neg_polarity = []
+
     for token in corpus:
         synsets = list(swn.senti_synsets(token))
         if len(synsets) > 0:
@@ -52,6 +57,8 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name):
         for i in range(size//2):
             pos_file.write(positive_synsets_keys[i].split(".")[0] + " " + str(positive_synsets[positive_synsets_keys[i]]))
             pos_file.write('\n')
+            pos_words.append(positive_synsets_keys[i].split(".")[0])
+            pos_polarity.append(positive_synsets[positive_synsets_keys[i]])
 
     negative_synsets_keys = sorted(negative_synsets, key=negative_synsets.get, reverse=True)
 
@@ -59,6 +66,18 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name):
         for i in range(size - size // 2):
             neg_file.write(negative_synsets_keys[i].split(".")[0] + " " + str(negative_synsets[negative_synsets_keys[i]]))
             neg_file.write('\n')
+            neg_words.append(negative_synsets_keys[i].split(".")[0])
+            neg_polarity.append(negative_synsets[negative_synsets_keys[i]])
+
+    return pos_words, neg_words, pos_polarity, neg_polarity
+
+
+def compute_simon_vectors(reviews, pos_words, neg_words, size):
+    embeddings = []
+    for review in reviews:
+        simon_vector = compute_simon_vector(review.text, pos_words, neg_words, size)
+        embeddings.append(simon_vector.tolist())
+    return embeddings
 
 
 

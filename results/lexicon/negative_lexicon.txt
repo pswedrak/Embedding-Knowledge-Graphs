@@ -1,10 +1,10 @@
 cheapjack 1.0
-bad 1.0
-cad 1.0
 mislead 1.0
-deplorable 1.0
 unfortunate 1.0
+deplorable 1.0
 disrespect 1.0
+cad 1.0
 worst 1.0
-humble 0.875
+bad 1.0
+sorrow 0.875
 plain 0.875

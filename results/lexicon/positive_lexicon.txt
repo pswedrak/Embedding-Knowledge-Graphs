@@ -1,10 +1,10 @@
 love 1.0
-like 1.0
 balmy 1.0
-estimable 1.0
 good 1.0
-top-flight 1.0
+excellent 1.0
+like 1.0
 mean 1.0
 praise 1.0
-excellent 1.0
+estimable 1.0
+top-flight 1.0
 bliss 1.0
