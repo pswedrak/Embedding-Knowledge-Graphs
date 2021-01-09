@@ -1,7 +1,7 @@
 import random
 import jsons
 
-from common.constants import TRAIN_TO_TEST_RATIO
+from common.constants import TRAIN_DATA_RATIO
 from text_processing.text_utils import clean_line
 
 
@@ -14,16 +14,25 @@ class Review:
         self.word2vec_embedding = None
 
 
-def load_reviews(path, size):
-    reviews = []
+def load_reviews_json(path, train_size, test_size):
+    train_reviews = []
+    test_reviews = []
     with open(path) as f:
-        for i in range(size):
+        for i in range(train_size):
             try:
                 review = jsons.loads(f.readline())
-                reviews.append(Review(review.get('stars'), clean_line(review.get('text'))))
+                train_reviews.append(Review(review.get('stars'), clean_line(review.get('text'))))
             except UnicodeDecodeError:
                 continue
-    return reviews
+
+        for i in range(test_size):
+            try:
+                review = jsons.loads(f.readline())
+                test_reviews.append(Review(review.get('stars'), clean_line(review.get('text'))))
+            except UnicodeDecodeError:
+                continue
+
+    return train_reviews, test_reviews
 
 
 def store_reviews(reviews, filename):
@@ -56,14 +65,14 @@ def prepare_data_sets(reviews):
 
     for review in reviews:
         if review.stars < 3:
-            if random.random() <= TRAIN_TO_TEST_RATIO:
+            if random.random() <= TRAIN_DATA_RATIO:
                 train_data.append(review)
                 train_labels.append(0)
             else:
                 test_data.append(review)
                 test_labels.append(0)
         elif review.stars > 3:
-            if random.random() <= TRAIN_TO_TEST_RATIO:
+            if random.random() <= TRAIN_DATA_RATIO:
                 train_data.append(review)
                 train_labels.append(1)
             else:
@@ -74,10 +83,10 @@ def prepare_data_sets(reviews):
 
 
 def load_reviews(tokens_file, simon_file, word2vec_file, doc2vec_file):
-    reviews = read_reviews('../' + tokens_file)
-    simon_vectors = load_vectors('../' + simon_file)
-    word2vec = load_vectors('../' + word2vec_file)
-    doc2vec = load_vectors('../' + doc2vec_file)
+    reviews = read_reviews(tokens_file)
+    simon_vectors = load_vectors(simon_file)
+    word2vec = load_vectors(word2vec_file)
+    doc2vec = load_vectors(doc2vec_file)
 
     for i in range(len(reviews)):
         reviews[i].simon_embedding = simon_vectors[i]

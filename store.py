@@ -1,30 +1,11 @@
-from common.constants import YELP_DATASET_PATH, STORE_REVIEW_TOKENS_PATH, WORD2VEC_FILE, DOC2VEC_FILE, SIMON_FILE
-from common.helpers import store_vectors
-from doc2vec.doc2vec import generate_doc2vec
-from sentiment_analysis.simon import extract_lexicon_words, compute_simon_vectors
-from text_processing.text_utils import process_corpus
-from text_processing.yelp_utils import load_reviews, store_reviews
-from word2vec.word2vec import generate_word2vec
+from common.constants import YELP_DATASET_PATH, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH
+from text_processing.yelp_utils import store_reviews, load_reviews_json
 
 
 def main():
-    reviews = load_reviews(YELP_DATASET_PATH, 1000)
-    store_reviews(reviews, STORE_REVIEW_TOKENS_PATH)
-
-    embeddings_doc2vec = generate_doc2vec(reviews)
-    store_vectors(DOC2VEC_FILE, embeddings_doc2vec)
-
-    embeddings_word2vec = generate_word2vec(reviews)
-    store_vectors(WORD2VEC_FILE, embeddings_word2vec)
-
-    size = 20
-    corpus = process_corpus(reviews)
-    pos_words, neg_words, pos_polarity, neg_polarity = extract_lexicon_words(corpus, size,
-                                                                             "results/lexicon/positive_lexicon.txt",
-                                                                             "results/lexicon/negative_lexicon.txt")
-
-    embeddings_simon = compute_simon_vectors(reviews, pos_words, neg_words, size)
-    store_vectors(SIMON_FILE, embeddings_simon)
+    test_reviews, train_reviews = load_reviews_json(YELP_DATASET_PATH, 700, 300)
+    store_reviews(test_reviews, REVIEW_TOKENS_PATH)
+    store_reviews(train_reviews, REVIEW_TEST_TOKENS_PATH)
 
 
 if __name__ == "__main__":

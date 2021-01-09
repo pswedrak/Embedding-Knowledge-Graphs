@@ -1,16 +1,38 @@
-from collections import Counter
-
 import numpy as np
-from nltk.corpus import wordnet as wn
 from sematch.semantic.similarity import WordNetSimilarity
 from nltk.corpus import sentiwordnet as swn
 import seaborn as sns
 import matplotlib.pyplot as plt
+from tensorflow.python.keras.utils.np_utils import to_categorical
+
+from common.helpers import store_vectors
+from text_processing.yelp_utils import load_vectors
 
 
-def compute_simon_vector(input_tokens, positive_lexicon_words, negative_lexicon_words, size=25):
+def build_simon_model(reviews, positive_lexicon_words, negative_lexicon_words, train_filename, test_filename,
+                      train_size, verbose=True):
+    train_results = []
+    test_results = []
+    i = 0
+    for review in reviews:
+        if i < train_size:
+            train_results.append(list(compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words)))
+        else:
+            test_results.append(list(compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words)))
+
+        if verbose:
+            print("Simon vector has been computed: " + str(i+1) + "/" + str(len(reviews)))
+
+        i += 1
+
+    store_vectors(train_filename, train_results)
+    store_vectors(test_filename, test_results)
+
+
+def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, show=False):
     wns = WordNetSimilarity()
-    similarity_matrix = np.zeros((len(input_tokens), size))
+    input_tokens = review.text
+    similarity_matrix = np.zeros((len(input_tokens), len(positive_lexicon_words) + len(negative_lexicon_words)))
     # input_tokens_in_wordnet = []
     # for input_token in input_tokens:
     #     if len(wn.synsets(input_token, pos='n')) > 0:
@@ -27,8 +49,9 @@ def compute_simon_vector(input_tokens, positive_lexicon_words, negative_lexicon_
             for j in range(len(negative_lexicon_words)):
                 similarity_matrix[i, len(positive_lexicon_words) + j] = wns.word_similarity(input_tokens[i], negative_lexicon_words[j][0], 'wpath')
 
-    #sns.heatmap(similarity_matrix, xticklabels=positive_lexicon_words+negative_lexicon_words, yticklabels=input_tokens)
-    #plt.show()
+    if show:
+        sns.heatmap(similarity_matrix, xticklabels=positive_lexicon_words+negative_lexicon_words, yticklabels=input_tokens)
+        plt.show()
 
     return np.max(similarity_matrix, axis=0)
 
@@ -78,6 +101,37 @@ def compute_simon_vectors(reviews, pos_words, neg_words, size):
         simon_vector = compute_simon_vector(review.text, pos_words, neg_words, size)
         embeddings.append(simon_vector.tolist())
     return embeddings
+
+
+def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model):
+    x_train = []
+    x_test = []
+    y_train = []
+    y_test = []
+
+    simon_vectors = load_vectors(train_model)
+    i = 0
+    for review in train_reviews:
+        if review.stars <= 2:
+            x_train.append(simon_vectors[i])
+            y_train.append(0)
+        elif review.stars >= 4:
+            x_train.append(simon_vectors[i])
+            y_train.append(1)
+        i += 1
+
+    simon_vectors = load_vectors(test_model)
+    i = 0
+    for review in test_reviews:
+        if review.stars <= 2:
+            x_test.append(simon_vectors[i])
+            y_test.append(0)
+        elif review.stars >= 4:
+            x_test.append(simon_vectors[i])
+            y_test.append(1)
+        i += 1
+
+    return np.array(x_train), np.array(x_test), np.array(to_categorical(y_train)), np.array(to_categorical(y_test))
 
 
 

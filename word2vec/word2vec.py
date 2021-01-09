@@ -1,20 +1,40 @@
 import numpy as np
-from gensim.models import Word2Vec
+import gensim.downloader as api
+from tensorflow.python.keras.utils.np_utils import to_categorical
 
 
-def generate_word2vec(reviews):
-    sentences = list(map(lambda x: x.text, reviews))
-    model = Word2Vec(
-        sentences,
-        size=100,
-        window=5,
-        min_count=1,
-        workers=10,
-        iter=500)
+def prepare_dataset_word2vec(train_reviews, test_reviews):
+    wv_from_bin = api.load("glove-twitter-100")
+    vocab = list(wv_from_bin.vocab.keys())
+    print("Loaded vocab size %i" % len(vocab))
 
-    results = []
-    for sentence in sentences:
-        vectors = np.array(list(map(lambda x: model.wv[x], sentence)))
-        results.append(np.mean(vectors, axis=0).tolist())
+    x_train = []
+    x_test = []
+    y_train = []
+    y_test = []
 
-    return results
+    for review in train_reviews:
+        if review.stars <= 2:
+            x_train.append(compute_embedding(wv_from_bin, review.text))
+            y_train.append(0)
+        elif review.stars >= 4:
+            x_train.append(compute_embedding(wv_from_bin, review.text))
+            y_train.append(1)
+
+    for review in test_reviews:
+        if review.stars <= 2:
+            x_test.append(compute_embedding(wv_from_bin, review.text))
+            y_test.append(0)
+        elif review.stars >= 4:
+            x_test.append(compute_embedding(wv_from_bin, review.text))
+            y_test.append(1)
+
+    return np.array(x_train), np.array(x_test), np.array(to_categorical(y_train)), np.array(to_categorical(y_test))
+
+
+def compute_embedding(wv_from_bin, text):
+    words = filter(lambda word: word in wv_from_bin.vocab.keys(), text)
+    vector = map(lambda word: wv_from_bin[word], words)
+    vector = np.mean(list(vector), axis=0)
+    return vector
+

@@ -1,7 +1,16 @@
 YELP_DATASET_PATH = 'F:/yelp_academic_dataset_review.json'
-STORE_REVIEW_TOKENS_PATH = 'results/review_tokens.txt'
-SIMON_FILE = 'results/review_simon.txt'
+REVIEW_TOKENS_PATH = 'results/review_tokens.txt'
+REVIEW_TEST_TOKENS_PATH = 'results/review_test_tokens.txt'
+
+POSITIVE_LEXICON = "results/lexicon/positive_lexicon.txt"
+NEGATIVE_LEXICON = "results/lexicon/negative_lexicon.txt"
+
+SIMON_MODEL_TRAIN = 'results/review_simon_train.txt'
+SIMON_MODEL_TEST = 'results/review_simon_test.txt'
+
 WORD2VEC_FILE = 'results/review_word2vec.txt'
 DOC2VEC_FILE = 'results/review_doc2vec.txt'
-TRAIN_TO_TEST_RATIO = 0.7
+DOC2VEC_FILE_TEST = 'results/review_doc2vec_test.txt'
+DOC2VEC_MODEL = 'results/doc2vec_model'
+TRAIN_DATA_RATIO = 0.7
 
