@@ -3,8 +3,8 @@ import gensim.downloader as api
 from tensorflow.python.keras.utils.np_utils import to_categorical
 
 
-def prepare_dataset_word2vec(train_reviews, test_reviews):
-    wv_from_bin = api.load("glove-twitter-100")
+def prepare_dataset(train_reviews, test_reviews, vectors_name):
+    wv_from_bin = api.load(vectors_name)
     vocab = list(wv_from_bin.vocab.keys())
     print("Loaded vocab size %i" % len(vocab))
 
