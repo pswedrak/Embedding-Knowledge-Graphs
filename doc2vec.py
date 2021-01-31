@@ -1,4 +1,4 @@
-from common.constants import REVIEW_TOKENS_PATH, DOC2VEC_FILE
+from common.constants import REVIEW_TOKENS_PATH
 from doc2vec.doc2vec import generate_doc2vec_model
 from text_processing.yelp_utils import read_reviews
 
