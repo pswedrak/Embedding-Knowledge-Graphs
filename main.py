@@ -2,8 +2,9 @@ from gensim.models import Doc2Vec, Word2Vec
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Dense
 from common.constants import DOC2VEC_MODEL, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH, SIMON_MODEL_TRAIN, \
-    SIMON_MODEL_TEST, WORD2VEC_MODEL
+    SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS
 from doc2vec.doc2vec import prepare_dataset_doc2vec
+from glove.glove import prepare_dataset_glove
 from sentiment_analysis.simon import prepare_dataset_simon
 from text_processing.yelp_utils import read_reviews
 from gensim_vectors.gensim_vectors import prepare_dataset
@@ -13,15 +14,17 @@ from word2vec.word2vec import prepare_dataset_word2vec
 
 
 def main():
-    # evaluate_doc2vec()
+    evaluate_doc2vec()
     # evaluate_word2vec_pre_trained()
     # evaluate_wordvec()
-    evaluate_wordvec_simon()
+    # evaluate_wordvec_simon()
     # evaluate_simon()
-    # evaluate_glove()
+    # evaluate_glove_pretrained()
     # evaluate_doc2vec_simon()
-    # evaluate_glove_simon()
+    # evaluate_glove_pretrained_simon()
     # evaluate_word2vec_simon()
+    # evaluate_glove()
+    # evaluate_glove_simon()
 
 
 def evaluate_simon():
@@ -46,8 +49,8 @@ def evaluate_simon():
         scores = model.evaluate(x_test, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('SIMON: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('SIMON: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('SIMON: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
 def evaluate_word2vec_pre_trained():
@@ -71,11 +74,11 @@ def evaluate_word2vec_pre_trained():
         scores = model.evaluate(x_test, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('WORD2VEC: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('WORD2VEC: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('WORD2VEC: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('WORD2VEC: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def evaluate_glove():
+def evaluate_glove_pretrained():
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     x_train, x_test, y_train, y_test = prepare_dataset(train_reviews, test_reviews, "glove-twitter-100")
@@ -130,8 +133,8 @@ def evaluate_doc2vec():
         scores = model.evaluate(x_test, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('DOC2VEC: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('DOC2VEC: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('DOC2VEC: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('DOC2VEC: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
 def evaluate_doc2vec_simon():
@@ -168,11 +171,11 @@ def evaluate_doc2vec_simon():
         scores = model.evaluate(x_test_concat, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('DOC2VEC & SIMON: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('DOC2VEC & SIMON: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('DOC2VEC & SIMON: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('DOC2VEC & SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def evaluate_glove_simon():
+def evaluate_glove_pretrained_simon():
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     x_train, x_test, y_train, y_test = prepare_dataset(train_reviews, test_reviews, "glove-twitter-100")
@@ -245,8 +248,8 @@ def evaluate_word2vec_simon():
         scores = model.evaluate(x_test_concat, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('WORD2VEC & SIMON: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('WORD2VEC & SIMON: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('WORD2VEC & SIMON: Accuracy on the training data: {}'.format(np.mean(training_acc)))
+    print('WORD2VEC & SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
 def evaluate_wordvec():
@@ -270,8 +273,8 @@ def evaluate_wordvec():
         scores = model.evaluate(x_test, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('WORD2VEC: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('WORD2VEC: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('WORD2VEC: Accuracy on the training data: {}'.format(np.mean(training_acc)))
+    print('WORD2VEC: Accuracy on the test data: {}'.format(np.mean(test_acc)))
 
 
 def evaluate_wordvec_simon():
@@ -309,8 +312,88 @@ def evaluate_wordvec_simon():
         scores = model.evaluate(x_test_concat, y_test, verbose=1)
         test_acc.append(scores[1])
 
-    print('WORD2VEC & SIMON: Accuracy on the training data: {}% '.format(np.mean(training_acc)))
-    print('WORD2VEC & SIMON: Accuracy on the test data: {}% '.format(np.mean(test_acc)))
+    print('WORD2VEC & SIMON: Accuracy on the training data: {}'.format(np.mean(training_acc)))
+    print('WORD2VEC & SIMON: Accuracy on the test data: {}'.format(np.mean(test_acc)))
+
+
+def evaluate_glove():
+    train_reviews = read_reviews(REVIEW_TOKENS_PATH)
+    test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
+    x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews)
+
+    training_acc = []
+    test_acc = []
+    dim = 100
+
+    for i in range(10):
+        model = define_predicting_model(dim)
+
+        model.compile(optimizer='adam',
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+        history = model.fit(x_train, y_train, epochs=100)
+        training_acc.append(history.history['accuracy'][-1])
+        scores = model.evaluate(x_test, y_test, verbose=1)
+        test_acc.append(scores[1])
+
+    print('GloVe: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('GloVe: Accuracy on the test data: {} '.format(np.mean(test_acc)))
+
+
+def evaluate_glove():
+    train_reviews = read_reviews(REVIEW_TOKENS_PATH)
+    test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
+    x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews)
+
+    training_acc = []
+    test_acc = []
+    dim = 100
+
+    for i in range(10):
+        model = define_predicting_model(dim)
+
+        model.compile(optimizer='adam',
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+        history = model.fit(x_train, y_train, epochs=100)
+        training_acc.append(history.history['accuracy'][-1])
+        scores = model.evaluate(x_test, y_test, verbose=1)
+        test_acc.append(scores[1])
+
+    print('GloVe: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('GloVe: Accuracy on the test data: {} '.format(np.mean(test_acc)))
+
+
+def evaluate_glove_simon():
+    train_reviews = read_reviews(REVIEW_TOKENS_PATH)
+    test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
+    x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews)
+    x_train2, x_test2, y_train2, y_test2 = prepare_dataset_simon(train_reviews, test_reviews,
+                                                             SIMON_MODEL_TRAIN, SIMON_MODEL_TEST)
+
+    x_train_concat = np.zeros((len(x_train), x_train.shape[1] + x_train2.shape[1]))
+    x_test_concat = np.zeros((len(x_test), x_test.shape[1] + x_test2.shape[1]))
+
+    training_acc = []
+    test_acc = []
+    dim = 200
+
+    for i in range(10):
+        model = define_predicting_model(dim)
+
+        model.compile(optimizer='adam',
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+        history = model.fit(x_train_concat, y_train, epochs=100)
+        training_acc.append(history.history['accuracy'][-1])
+        scores = model.evaluate(x_test_concat, y_test, verbose=1)
+        test_acc.append(scores[1])
+
+    print('GloVe & SIMON: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('GloVe & SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
 if __name__ == "__main__":
