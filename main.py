@@ -1,10 +1,11 @@
 from gensim.models import Doc2Vec, Word2Vec
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense
+from tensorflow.python.keras.layers import Dense, Embedding, SpatialDropout1D, LSTM
 from common.constants import DOC2VEC_MODEL, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH, SIMON_MODEL_TRAIN, \
     SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS
 from doc2vec.doc2vec import prepare_dataset_doc2vec
 from glove.glove import prepare_dataset_glove
+from lstm.lstm import prepare_dataset_lstm
 from sentiment_analysis.simon import prepare_dataset_simon
 from text_processing.yelp_utils import read_reviews
 from gensim_vectors.gensim_vectors import prepare_dataset
@@ -14,7 +15,7 @@ from word2vec.word2vec import prepare_dataset_word2vec
 
 
 def main():
-    evaluate_doc2vec()
+    # evaluate_doc2vec()
     # evaluate_word2vec_pre_trained()
     # evaluate_wordvec()
     # evaluate_wordvec_simon()
@@ -25,6 +26,68 @@ def main():
     # evaluate_word2vec_simon()
     # evaluate_glove()
     # evaluate_glove_simon()
+    # evaluate_lstm()
+    evaluate_simon_lstm()
+
+
+def evaluate_simon_lstm():
+    size = 100
+    train_reviews = read_reviews(REVIEW_TOKENS_PATH)
+    test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
+    x_train, x_test, y_train, y_test = prepare_dataset_simon(train_reviews, test_reviews,
+                                                             SIMON_MODEL_TRAIN, SIMON_MODEL_TEST)
+
+    training_acc = []
+    test_acc = []
+
+    for i in range(3):
+        model = define_lstm_model(size, x_train.shape[1])
+
+        model.compile(optimizer='adam',
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+        history = model.fit(x_train, y_train, epochs=10)
+        training_acc.append(history.history['accuracy'][-1])
+        scores = model.evaluate(x_test, y_test, verbose=1)
+        test_acc.append(scores[1])
+
+    print('SIMON: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
+
+
+def evaluate_lstm():
+    train_reviews = read_reviews(REVIEW_TOKENS_PATH)
+    test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
+    x_train, x_test, y_train, y_test, tokenizer = prepare_dataset_lstm(train_reviews, test_reviews)
+
+    training_acc = []
+    test_acc = []
+    epochs = 3
+    for i in range(10):
+        model = define_lstm_model(len(tokenizer.word_index) + 1, x_train.shape[1])
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+        batch_size = 32
+        history = model.fit(x_train, y_train, epochs=epochs, batch_size=batch_size, verbose=2)
+        training_acc.append(history.history['accuracy'][-1])
+        scores = model.evaluate(x_test, y_test, verbose=1)
+        test_acc.append(scores[1])
+
+    print('LSTM: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+    print('LSTM: Accuracy on the test data: {} '.format(np.mean(test_acc)))
+
+
+def define_lstm_model(size, input_length):
+    embed_dim = 128
+    lstm_out = 196
+
+    model = Sequential()
+    model.add(Embedding(size, embed_dim, input_length=input_length))
+    model.add(SpatialDropout1D(0.4))
+    model.add(LSTM(lstm_out, dropout=0.2, recurrent_dropout=0.2))
+    model.add(Dense(2, activation='softmax'))
+    return model
 
 
 def evaluate_simon():
