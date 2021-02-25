@@ -5,31 +5,34 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from tensorflow.python.keras.utils.np_utils import to_categorical
 
-from common.helpers import store_vectors
+from common.helpers import store_vectors, store_vector
 from text_processing.yelp_utils import load_vectors
 
 
-def build_simon_model(reviews, positive_lexicon_words, negative_lexicon_words, train_filename, test_filename,
-                      train_size, verbose=True):
+def build_simon_model(reviews, positive_lexicon_words, negative_lexicon_words, pos_polarity, neg_polarity,
+                      train_filename, test_filename, train_size, verbose=True):
     train_results = []
     test_results = []
     i = 0
     for review in reviews:
+        result = list(
+            compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, pos_polarity,
+                                 neg_polarity))
         if i < train_size:
-            train_results.append(list(compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words)))
+            store_vector(train_filename, result)
         else:
-            test_results.append(list(compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words)))
+            store_vector(test_filename, result)
 
         if verbose:
             print("Simon vector has been computed: " + str(i+1) + "/" + str(len(reviews)))
 
         i += 1
 
-    store_vectors(train_filename, train_results)
-    store_vectors(test_filename, test_results)
+    # store_vectors(train_filename, train_results)
+    # store_vectors(test_filename, test_results)
 
 
-def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, show=False):
+def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, pos_polarity, neg_polarity, include_polarity=False, show=False):
     wns = WordNetSimilarity()
     input_tokens = review.text
     similarity_matrix = np.zeros((len(input_tokens), len(positive_lexicon_words) + len(negative_lexicon_words)))
@@ -53,17 +56,22 @@ def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words,
         sns.heatmap(similarity_matrix, xticklabels=positive_lexicon_words+negative_lexicon_words, yticklabels=input_tokens)
         plt.show()
 
-    return np.max(similarity_matrix, axis=0)
+    if include_polarity:
+        return np.multiply(np.max(similarity_matrix, axis=0),  np.concatenate(pos_polarity, neg_polarity))
+    else:
+        return np.max(similarity_matrix, axis=0)
 
 
-def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name):
+def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_name):
     positive_synsets = {}
     negative_synsets = {}
 
     pos_words = []
     neg_words = []
+    neu_words = []
     pos_polarity = []
     neg_polarity = []
+    neu_polarity = []
 
     for token in corpus:
         synsets = list(swn.senti_synsets(token))
@@ -74,10 +82,14 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name):
             synsets.sort(key=lambda x: x.neg_score(), reverse=True)
             negative_synsets[synsets[0].synset.name()] = synsets[0].neg_score()
 
+            for synset in synsets:
+                if synset.pos_score() == synset.neg_score():
+                    neu_words.append(synset.synset.name())
+
     positive_synsets_keys = sorted(positive_synsets, key=positive_synsets.get, reverse=True)
 
     with open(pos_file_name, "w") as pos_file:
-        for i in range(size//2):
+        for i in range(size // 3):
             pos_file.write(positive_synsets_keys[i].split(".")[0] + " " + str(positive_synsets[positive_synsets_keys[i]]))
             pos_file.write('\n')
             pos_words.append(positive_synsets_keys[i].split(".")[0])
@@ -86,13 +98,22 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name):
     negative_synsets_keys = sorted(negative_synsets, key=negative_synsets.get, reverse=True)
 
     with open(neg_file_name, "w") as neg_file:
-        for i in range(size - size // 2):
+        for i in range(size - size // 3):
             neg_file.write(negative_synsets_keys[i].split(".")[0] + " " + str(negative_synsets[negative_synsets_keys[i]]))
             neg_file.write('\n')
             neg_words.append(negative_synsets_keys[i].split(".")[0])
             neg_polarity.append(negative_synsets[negative_synsets_keys[i]])
 
-    return pos_words, neg_words, pos_polarity, neg_polarity
+    with open(neu_file_name, "w") as neu_file:
+        for i in range(size - size // 3):
+            name = neu_words[i].split(".")[0]
+            if name not in neu_words:
+                neu_file.write(name + " " + "1.0")
+                neu_file.write('\n')
+                neu_words.append(name)
+                neu_polarity.append(1.0)
+
+    return pos_words, neg_words, neu_words, pos_polarity, neg_polarity, neu_polarity
 
 
 def compute_simon_vectors(reviews, pos_words, neg_words, size):

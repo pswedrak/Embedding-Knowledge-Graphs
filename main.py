@@ -1,5 +1,7 @@
 from gensim.models import Doc2Vec, Word2Vec
+from tensorflow.python import enable_eager_execution
 from tensorflow.python.keras import Sequential
+from tensorflow.python.keras.backend import get_value
 from tensorflow.python.keras.layers import Dense, Embedding, SpatialDropout1D, LSTM
 from common.constants import DOC2VEC_MODEL, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH, SIMON_MODEL_TRAIN, \
     SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS
@@ -19,7 +21,7 @@ def main():
     # evaluate_word2vec_pre_trained()
     # evaluate_wordvec()
     # evaluate_wordvec_simon()
-    # evaluate_simon()
+    evaluate_simon()
     # evaluate_glove_pretrained()
     # evaluate_doc2vec_simon()
     # evaluate_glove_pretrained_simon()
@@ -27,7 +29,7 @@ def main():
     # evaluate_glove()
     # evaluate_glove_simon()
     # evaluate_lstm()
-    evaluate_simon_lstm()
+    # evaluate_simon_lstm()
 
 
 def evaluate_simon_lstm():
@@ -40,14 +42,14 @@ def evaluate_simon_lstm():
     training_acc = []
     test_acc = []
 
-    for i in range(3):
+    for i in range(10):
         model = define_lstm_model(size, x_train.shape[1])
 
         model.compile(optimizer='adam',
                       loss='binary_crossentropy',
                       metrics=['accuracy'])
 
-        history = model.fit(x_train, y_train, epochs=10)
+        history = model.fit(x_train, y_train, epochs=16)
         training_acc.append(history.history['accuracy'][-1])
         scores = model.evaluate(x_test, y_test, verbose=1)
         test_acc.append(scores[1])
@@ -63,7 +65,7 @@ def evaluate_lstm():
 
     training_acc = []
     test_acc = []
-    epochs = 3
+    epochs = 16
     for i in range(10):
         model = define_lstm_model(len(tokenizer.word_index) + 1, x_train.shape[1])
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
@@ -87,6 +89,7 @@ def define_lstm_model(size, input_length):
     model.add(SpatialDropout1D(0.4))
     model.add(LSTM(lstm_out, dropout=0.2, recurrent_dropout=0.2))
     model.add(Dense(2, activation='softmax'))
+    print(model.summary())
     return model
 
 

@@ -4,6 +4,7 @@ REVIEW_TEST_TOKENS_PATH = 'results/review_test_tokens.txt'
 
 POSITIVE_LEXICON = "results/lexicon/positive_lexicon.txt"
 NEGATIVE_LEXICON = "results/lexicon/negative_lexicon.txt"
+NEUTRAL_LEXICON = "results/lexicon/neutral_lexicon.txt"
 
 SIMON_MODEL_TRAIN = 'results/review_simon_train.txt'
 SIMON_MODEL_TEST = 'results/review_simon_test.txt'

@@ -3,3 +3,9 @@ def store_vectors(filepath, vectors):
         for vector in vectors:
             file.write(str(vector))
             file.write('\n')
+
+
+def store_vector(filepath, vector):
+    with open(filepath, 'a') as file:
+        file.write(str(vector))
+        file.write('\n')
