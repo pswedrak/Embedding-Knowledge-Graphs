@@ -94,20 +94,21 @@ def define_lstm_model(size, input_length):
 
 
 def evaluate_simon():
-    size = 100
+    size = 150
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     x_train, x_test, y_train, y_test = prepare_dataset_simon(train_reviews, test_reviews,
                                                              SIMON_MODEL_TRAIN, SIMON_MODEL_TEST)
 
+    print(y_test)
     training_acc = []
     test_acc = []
 
     for i in range(10):
-        model = define_predicting_model(size)
+        model = define_predicting_model(size, 3)
 
         model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
+                      loss='categorical_crossentropy',
                       metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=100)
@@ -169,11 +170,11 @@ def evaluate_glove_pretrained():
     print('GloVe: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def define_predicting_model(input_dim=100):
+def define_predicting_model(input_dim=100, output_dim=2):
     model = Sequential()
     model.add(Dense(100, activation='relu', input_dim=input_dim))
     model.add(Dense(50, activation='relu'))
-    model.add(Dense(2, activation='softmax'))
+    model.add(Dense(output_dim, activation='softmax'))
     print(model.summary())
     return model
 

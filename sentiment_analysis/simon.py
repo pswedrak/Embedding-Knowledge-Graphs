@@ -83,7 +83,7 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_n
             negative_synsets[synsets[0].synset.name()] = synsets[0].neg_score()
 
             for synset in synsets:
-                if synset.pos_score() == synset.neg_score():
+                if (synset.pos_score() == 0) & (synset.neg_score() == 0):
                     neu_words.append(synset.synset.name())
 
     positive_synsets_keys = sorted(positive_synsets, key=positive_synsets.get, reverse=True)
@@ -98,20 +98,24 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_n
     negative_synsets_keys = sorted(negative_synsets, key=negative_synsets.get, reverse=True)
 
     with open(neg_file_name, "w") as neg_file:
-        for i in range(size - size // 3):
+        for i in range(size // 3):
             neg_file.write(negative_synsets_keys[i].split(".")[0] + " " + str(negative_synsets[negative_synsets_keys[i]]))
             neg_file.write('\n')
             neg_words.append(negative_synsets_keys[i].split(".")[0])
             neg_polarity.append(negative_synsets[negative_synsets_keys[i]])
 
     with open(neu_file_name, "w") as neu_file:
-        for i in range(size - size // 3):
-            name = neu_words[i].split(".")[0]
+        i = 0
+        j = 0
+        while i < (size // 3):
+            name = neu_words[j].split(".")[0]
             if name not in neu_words:
                 neu_file.write(name + " " + "1.0")
                 neu_file.write('\n')
                 neu_words.append(name)
                 neu_polarity.append(1.0)
+                i += 1
+            j += 1
 
     return pos_words, neg_words, neu_words, pos_polarity, neg_polarity, neu_polarity
 
@@ -139,6 +143,9 @@ def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model):
         elif review.stars >= 4:
             x_train.append(simon_vectors[i])
             y_train.append(1)
+        elif review.stars == 3:
+            x_train.append(simon_vectors[i])
+            y_train.append(2)
         i += 1
 
     simon_vectors = load_vectors(test_model)
@@ -150,6 +157,9 @@ def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model):
         elif review.stars >= 4:
             x_test.append(simon_vectors[i])
             y_test.append(1)
+        elif review.stars == 3:
+            x_test.append(simon_vectors[i])
+            y_test.append(2)
         i += 1
 
     return np.array(x_train), np.array(x_test), np.array(to_categorical(y_train)), np.array(to_categorical(y_test))
