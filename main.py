@@ -4,7 +4,7 @@ from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.backend import get_value
 from tensorflow.python.keras.layers import Dense, Embedding, SpatialDropout1D, LSTM
 from common.constants import DOC2VEC_MODEL, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH, SIMON_MODEL_TRAIN, \
-    SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS
+    SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS, WORD2VEC_MODEL_THREE_CLASSES
 from doc2vec.doc2vec import prepare_dataset_doc2vec
 from glove.glove import prepare_dataset_glove
 from lstm.lstm import prepare_dataset_lstm
@@ -19,7 +19,7 @@ from word2vec.word2vec import prepare_dataset_word2vec
 def main():
     # evaluate_doc2vec()
     # evaluate_word2vec_pre_trained()
-    # evaluate_wordvec()
+    # evaluate_wordvec(True)
     # evaluate_wordvec_simon()
     evaluate_simon()
     # evaluate_glove_pretrained()
@@ -100,7 +100,7 @@ def evaluate_simon():
     x_train, x_test, y_train, y_test = prepare_dataset_simon(train_reviews, test_reviews,
                                                              SIMON_MODEL_TRAIN, SIMON_MODEL_TEST)
 
-    print(y_test)
+    print(x_train.shape)
     training_acc = []
     test_acc = []
 
@@ -319,20 +319,27 @@ def evaluate_word2vec_simon():
     print('WORD2VEC & SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def evaluate_wordvec():
+def evaluate_wordvec(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
-    word2vec_model = Word2Vec.load(WORD2VEC_MODEL)
-    x_train, x_test, y_train, y_test = prepare_dataset_word2vec(word2vec_model, train_reviews, test_reviews)
+    if three_classes:
+        word2vec_model = Word2Vec.load(WORD2VEC_MODEL_THREE_CLASSES)
+    else:
+        word2vec_model = Word2Vec.load(WORD2VEC_MODEL)
+
+    x_train, x_test, y_train, y_test = prepare_dataset_word2vec(word2vec_model, train_reviews, test_reviews, three_classes)
 
     training_acc = []
     test_acc = []
 
     for i in range(10):
-        model = define_predicting_model()
+        if three_classes:
+            model = define_predicting_model(150, 3)
+        else:
+            model = define_predicting_model(100)
 
         model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
+                      loss='categorical_crossentropy',
                       metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=100)
