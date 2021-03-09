@@ -11,8 +11,12 @@ def main():
     size = 150
 
     corpus = process_corpus(reviews)
-    pos_words, neg_words, neu_words, pos_polarity, neg_polarity, neu_polarity = extract_lexicon_words(corpus, size, POSITIVE_LEXICON, NEGATIVE_LEXICON, NEUTRAL_LEXICON)
-    build_simon_model(reviews + test_reviews, pos_words, neg_words, pos_polarity, neg_polarity, SIMON_MODEL_TRAIN, SIMON_MODEL_TEST, 1500)
+    pos_words, neg_words, neu_words, pos_polarity, neg_polarity, neu_polarity = extract_lexicon_words(corpus, size,
+                                                                                                      POSITIVE_LEXICON,
+                                                                                                      NEGATIVE_LEXICON,
+                                                                                                      NEUTRAL_LEXICON)
+    build_simon_model(reviews + test_reviews, pos_words, neg_words, neu_words, pos_polarity, neg_polarity, neu_polarity,
+                      SIMON_MODEL_TRAIN, SIMON_MODEL_TEST, 1500, True, True)
 
 
 if __name__ == "__main__":

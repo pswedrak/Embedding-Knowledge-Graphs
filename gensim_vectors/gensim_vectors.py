@@ -3,7 +3,7 @@ import gensim.downloader as api
 from tensorflow.python.keras.utils.np_utils import to_categorical
 
 
-def prepare_dataset(train_reviews, test_reviews, vectors_name):
+def prepare_dataset(train_reviews, test_reviews, vectors_name, three_classes=False):
     wv_from_bin = api.load(vectors_name)
     vocab = list(wv_from_bin.vocab.keys())
     print("Loaded vocab size %i" % len(vocab))
@@ -20,6 +20,9 @@ def prepare_dataset(train_reviews, test_reviews, vectors_name):
         elif review.stars >= 4:
             x_train.append(compute_embedding(wv_from_bin, review.text))
             y_train.append(1)
+        elif three_classes & (review.stars == 3):
+            x_train.append(compute_embedding(wv_from_bin, review.text))
+            y_train.append(2)
 
     for review in test_reviews:
         if review.stars <= 2:
@@ -28,6 +31,9 @@ def prepare_dataset(train_reviews, test_reviews, vectors_name):
         elif review.stars >= 4:
             x_test.append(compute_embedding(wv_from_bin, review.text))
             y_test.append(1)
+        elif three_classes & (review.stars == 3):
+            x_test.append(compute_embedding(wv_from_bin, review.text))
+            y_test.append(2)
 
     return np.array(x_train), np.array(x_test), np.array(to_categorical(y_train)), np.array(to_categorical(y_test))
 

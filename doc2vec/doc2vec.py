@@ -13,7 +13,7 @@ def generate_doc2vec_model(reviews):
     return doc2vec_model
 
 
-def prepare_dataset_doc2vec(model, train_reviews, test_reviews):
+def prepare_dataset_doc2vec(model, train_reviews, test_reviews, three_classes=False):
     x_train = []
     x_test = []
     y_train = []
@@ -26,6 +26,9 @@ def prepare_dataset_doc2vec(model, train_reviews, test_reviews):
         elif review.stars >= 4:
             x_train.append(model.infer_vector(review.text))
             y_train.append(1)
+        elif three_classes & (review.stars == 3):
+            x_train.append(model.infer_vector(review.text))
+            y_train.append(2)
 
     for review in test_reviews:
         if review.stars <= 2:
@@ -34,5 +37,8 @@ def prepare_dataset_doc2vec(model, train_reviews, test_reviews):
         elif review.stars >= 4:
             x_test.append(model.infer_vector(review.text))
             y_test.append(1)
+        elif three_classes & (review.stars == 3):
+            x_test.append(model.infer_vector(review.text))
+            y_test.append(2)
 
     return np.array(x_train), np.array(x_test), np.array(to_categorical(y_train)), np.array(to_categorical(y_test))

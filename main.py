@@ -1,7 +1,5 @@
 from gensim.models import Doc2Vec, Word2Vec
-from tensorflow.python import enable_eager_execution
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.backend import get_value
 from tensorflow.python.keras.layers import Dense, Embedding, SpatialDropout1D, LSTM
 from common.constants import DOC2VEC_MODEL, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH, SIMON_MODEL_TRAIN, \
     SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS, WORD2VEC_MODEL_THREE_CLASSES
@@ -17,16 +15,16 @@ from word2vec.word2vec import prepare_dataset_word2vec
 
 
 def main():
-    # evaluate_doc2vec()
-    # evaluate_word2vec_pre_trained()
+    # evaluate_doc2vec(True)
+    # evaluate_word2vec_pre_trained(True)
     # evaluate_wordvec(True)
-    # evaluate_wordvec_simon()
-    evaluate_simon()
-    # evaluate_glove_pretrained()
+    evaluate_wordvec_simon(True)
+    # evaluate_simon()
+    # evaluate_glove_pretrained(True)
     # evaluate_doc2vec_simon()
     # evaluate_glove_pretrained_simon()
     # evaluate_word2vec_simon()
-    # evaluate_glove()
+    # evaluate_glove(True)
     # evaluate_glove_simon()
     # evaluate_lstm()
     # evaluate_simon_lstm()
@@ -120,20 +118,23 @@ def evaluate_simon():
     print('SIMON: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def evaluate_word2vec_pre_trained():
+def evaluate_word2vec_pre_trained(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
-    x_train, x_test, y_train, y_test = prepare_dataset(train_reviews, test_reviews, "word2vec-google-news-300")
+    x_train, x_test, y_train, y_test = prepare_dataset(train_reviews, test_reviews, "word2vec-google-news-300", three_classes)
     dim = 300
 
     training_acc = []
     test_acc = []
 
     for i in range(10):
-        model = define_predicting_model(dim)
+        if three_classes:
+            model = define_predicting_model(dim, 3)
+        else:
+            model = define_predicting_model(dim)
 
         model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
+                      loss='categorical_crossentropy',
                       metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=100)
@@ -145,20 +146,23 @@ def evaluate_word2vec_pre_trained():
     print('WORD2VEC: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def evaluate_glove_pretrained():
+def evaluate_glove_pretrained(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
-    x_train, x_test, y_train, y_test = prepare_dataset(train_reviews, test_reviews, "glove-twitter-100")
+    x_train, x_test, y_train, y_test = prepare_dataset(train_reviews, test_reviews, "glove-twitter-100", three_classes)
     dim = 100
 
     training_acc = []
     test_acc = []
 
     for i in range(10):
-        model = define_predicting_model(dim)
+        if three_classes:
+            model = define_predicting_model(dim, 3)
+        else:
+            model = define_predicting_model(dim)
 
         model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
+                      loss='categorical_crossentropy',
                       metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=100)
@@ -179,17 +183,21 @@ def define_predicting_model(input_dim=100, output_dim=2):
     return model
 
 
-def evaluate_doc2vec():
+def evaluate_doc2vec(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     doc2vec_model = Doc2Vec.load(DOC2VEC_MODEL)
-    x_train, x_test, y_train, y_test = prepare_dataset_doc2vec(doc2vec_model, train_reviews, test_reviews)
+    x_train, x_test, y_train, y_test = prepare_dataset_doc2vec(doc2vec_model, train_reviews, test_reviews, three_classes)
 
+    dim = 100
     training_acc = []
     test_acc = []
 
     for i in range(10):
-        model = define_predicting_model()
+        if three_classes:
+            model = define_predicting_model(dim, 3)
+        else:
+            model = define_predicting_model(dim)
 
         model.compile(optimizer='adam',
                       loss='binary_crossentropy',
@@ -336,7 +344,7 @@ def evaluate_wordvec(three_classes=False):
         if three_classes:
             model = define_predicting_model(150, 3)
         else:
-            model = define_predicting_model(100)
+            model = define_predicting_model(150)
 
         model.compile(optimizer='adam',
                       loss='categorical_crossentropy',
@@ -351,13 +359,14 @@ def evaluate_wordvec(three_classes=False):
     print('WORD2VEC: Accuracy on the test data: {}'.format(np.mean(test_acc)))
 
 
-def evaluate_wordvec_simon():
+def evaluate_wordvec_simon(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     word2vec_model = Word2Vec.load(WORD2VEC_MODEL)
-    x_train, x_test, y_train, y_test = prepare_dataset_word2vec(word2vec_model, train_reviews, test_reviews)
+    x_train, x_test, y_train, y_test = prepare_dataset_word2vec(word2vec_model, train_reviews, test_reviews,
+                                                                three_classes)
     x_train2, x_test2, y_train2, y_test2 = prepare_dataset_simon(train_reviews, test_reviews,
-                                                             SIMON_MODEL_TRAIN, SIMON_MODEL_TEST)
+                                                                 SIMON_MODEL_TRAIN, SIMON_MODEL_TEST, three_classes)
 
     x_train_concat = np.zeros((len(x_train), x_train.shape[1] + x_train2.shape[1]))
     x_test_concat = np.zeros((len(x_test), x_test.shape[1] + x_test2.shape[1]))
@@ -370,15 +379,21 @@ def evaluate_wordvec_simon():
         x_test_concat[i] = np.concatenate((x_test[i], x_test2[i]))
         assert y_test[i][0] == y_test2[i][0]
 
-    dim = 200
+    if three_classes:
+        dim = 250
+    else:
+        dim = 200
     training_acc = []
     test_acc = []
 
     for i in range(10):
-        model = define_predicting_model(dim)
+        if three_classes:
+            model = define_predicting_model(dim, 3)
+        else:
+            model = define_predicting_model(dim)
 
         model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
+                      loss='categorical_crossentropy',
                       metrics=['accuracy'])
 
         history = model.fit(x_train_concat, y_train, epochs=100)
@@ -390,20 +405,23 @@ def evaluate_wordvec_simon():
     print('WORD2VEC & SIMON: Accuracy on the test data: {}'.format(np.mean(test_acc)))
 
 
-def evaluate_glove():
+def evaluate_glove(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
-    x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews)
+    x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews, three_classes)
 
     training_acc = []
     test_acc = []
     dim = 100
 
     for i in range(10):
-        model = define_predicting_model(dim)
+        if three_classes:
+            model = define_predicting_model(dim, 3)
+        else:
+            model = define_predicting_model(dim)
 
         model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
+                      loss='categorical_crossentropy',
                       metrics=['accuracy'])
 
         history = model.fit(x_train, y_train, epochs=100)
@@ -415,29 +433,29 @@ def evaluate_glove():
     print('GloVe: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
-def evaluate_glove():
-    train_reviews = read_reviews(REVIEW_TOKENS_PATH)
-    test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
-    x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews)
-
-    training_acc = []
-    test_acc = []
-    dim = 100
-
-    for i in range(10):
-        model = define_predicting_model(dim)
-
-        model.compile(optimizer='adam',
-                      loss='binary_crossentropy',
-                      metrics=['accuracy'])
-
-        history = model.fit(x_train, y_train, epochs=100)
-        training_acc.append(history.history['accuracy'][-1])
-        scores = model.evaluate(x_test, y_test, verbose=1)
-        test_acc.append(scores[1])
-
-    print('GloVe: Accuracy on the training data: {} '.format(np.mean(training_acc)))
-    print('GloVe: Accuracy on the test data: {} '.format(np.mean(test_acc)))
+# def evaluate_glove():
+#     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
+#     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
+#     x_train, x_test, y_train, y_test = prepare_dataset_glove(GLOVE_VECTORS, train_reviews, test_reviews)
+#
+#     training_acc = []
+#     test_acc = []
+#     dim = 100
+#
+#     for i in range(10):
+#         model = define_predicting_model(dim)
+#
+#         model.compile(optimizer='adam',
+#                       loss='binary_crossentropy',
+#                       metrics=['accuracy'])
+#
+#         history = model.fit(x_train, y_train, epochs=100)
+#         training_acc.append(history.history['accuracy'][-1])
+#         scores = model.evaluate(x_test, y_test, verbose=1)
+#         test_acc.append(scores[1])
+#
+#     print('GloVe: Accuracy on the training data: {} '.format(np.mean(training_acc)))
+#     print('GloVe: Accuracy on the test data: {} '.format(np.mean(test_acc)))
 
 
 def evaluate_glove_simon():

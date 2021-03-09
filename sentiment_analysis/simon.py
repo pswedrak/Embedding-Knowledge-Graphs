@@ -9,15 +9,17 @@ from common.helpers import store_vectors, store_vector
 from text_processing.yelp_utils import load_vectors
 
 
-def build_simon_model(reviews, positive_lexicon_words, negative_lexicon_words, pos_polarity, neg_polarity,
-                      train_filename, test_filename, train_size, verbose=True):
+def build_simon_model(reviews, positive_lexicon_words, negative_lexicon_words, neutral_lexicon_words, pos_polarity,
+                      neg_polarity, neu_polarity,
+                      train_filename, test_filename, train_size, verbose=True, three_classes=False):
     train_results = []
     test_results = []
     i = 0
     for review in reviews:
         result = list(
-            compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, pos_polarity,
-                                 neg_polarity))
+            compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, neutral_lexicon_words,
+                                 pos_polarity,
+                                 neg_polarity, neu_polarity, False, False, three_classes=three_classes))
         if i < train_size:
             store_vector(train_filename, result)
         else:
@@ -32,10 +34,12 @@ def build_simon_model(reviews, positive_lexicon_words, negative_lexicon_words, p
     # store_vectors(test_filename, test_results)
 
 
-def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, pos_polarity, neg_polarity, include_polarity=False, show=False):
+def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words, neutral_lexicon_words, pos_polarity,
+                         neg_polarity, neu_polarity, include_polarity=False, show=False, three_classes=False):
     wns = WordNetSimilarity()
     input_tokens = review.text
-    similarity_matrix = np.zeros((len(input_tokens), len(positive_lexicon_words) + len(negative_lexicon_words)))
+    similarity_matrix = np.zeros(
+        (len(input_tokens), len(positive_lexicon_words) + len(negative_lexicon_words) + len(neutral_lexicon_words)))
     # input_tokens_in_wordnet = []
     # for input_token in input_tokens:
     #     if len(wn.synsets(input_token, pos='n')) > 0:
@@ -46,18 +50,37 @@ def compute_simon_vector(review, positive_lexicon_words, negative_lexicon_words,
     # print(wns.word_similarity('film', 'great', 'wpath'))
     #
     for i in range(len(input_tokens)):
-            for j in range(len(positive_lexicon_words)):
-                similarity_matrix[i, j] = wns.word_similarity(input_tokens[i], positive_lexicon_words[j][0], 'wpath')
+        for j in range(len(positive_lexicon_words)):
+            similarity_matrix[i, j] = wns.word_similarity(input_tokens[i], positive_lexicon_words[j][0], 'wpath')
 
-            for j in range(len(negative_lexicon_words)):
-                similarity_matrix[i, len(positive_lexicon_words) + j] = wns.word_similarity(input_tokens[i], negative_lexicon_words[j][0], 'wpath')
+        if three_classes:
+            for j in range(len(neutral_lexicon_words)):
+                similarity_matrix[i, len(positive_lexicon_words) + j] = wns.word_similarity(input_tokens[i],
+                                                                                            neutral_lexicon_words[j][0],
+                                                                                            'wpath')
 
-    if show:
-        sns.heatmap(similarity_matrix, xticklabels=positive_lexicon_words+negative_lexicon_words, yticklabels=input_tokens)
+        for j in range(len(negative_lexicon_words)):
+            similarity_matrix[i, len(negative_lexicon_words) + len(positive_lexicon_words) + j] = wns.word_similarity(
+                input_tokens[i],
+                negative_lexicon_words[j][0],
+                'wpath')
+
+    if show & three_classes:
+        sns.heatmap(similarity_matrix,
+                    xticklabels=positive_lexicon_words + neutral_lexicon_words + negative_lexicon_words,
+                    yticklabels=input_tokens)
+        plt.show()
+    elif show & (not three_classes):
+        sns.heatmap(similarity_matrix,
+                    xticklabels=positive_lexicon_words + negative_lexicon_words,
+                    yticklabels=input_tokens)
         plt.show()
 
     if include_polarity:
-        return np.multiply(np.max(similarity_matrix, axis=0),  np.concatenate(pos_polarity, neg_polarity))
+        if three_classes:
+            return np.multiply(np.max(similarity_matrix, axis=0),  np.concatenate(pos_polarity, neg_polarity, neu_polarity))
+        else:
+            return np.multiply(np.max(similarity_matrix, axis=0),  np.concatenate(pos_polarity, neg_polarity))
     else:
         return np.max(similarity_matrix, axis=0)
 
@@ -68,7 +91,9 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_n
 
     pos_words = []
     neg_words = []
+    all_neu_words = []
     neu_words = []
+
     pos_polarity = []
     neg_polarity = []
     neu_polarity = []
@@ -84,7 +109,7 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_n
 
             for synset in synsets:
                 if (synset.pos_score() == 0) & (synset.neg_score() == 0):
-                    neu_words.append(synset.synset.name())
+                    all_neu_words.append(synset.synset.name())
 
     positive_synsets_keys = sorted(positive_synsets, key=positive_synsets.get, reverse=True)
 
@@ -108,7 +133,7 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_n
         i = 0
         j = 0
         while i < (size // 3):
-            name = neu_words[j].split(".")[0]
+            name = all_neu_words[j].split(".")[0]
             if name not in neu_words:
                 neu_file.write(name + " " + "1.0")
                 neu_file.write('\n')
@@ -120,15 +145,15 @@ def extract_lexicon_words(corpus, size, pos_file_name, neg_file_name, neu_file_n
     return pos_words, neg_words, neu_words, pos_polarity, neg_polarity, neu_polarity
 
 
-def compute_simon_vectors(reviews, pos_words, neg_words, size):
+def compute_simon_vectors(reviews, pos_words, neg_words, size, three_classes=False):
     embeddings = []
     for review in reviews:
-        simon_vector = compute_simon_vector(review.text, pos_words, neg_words, size)
+        simon_vector = compute_simon_vector(review.text, pos_words, neg_words, size, three_classes=three_classes)
         embeddings.append(simon_vector.tolist())
     return embeddings
 
 
-def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model):
+def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model, three_classes=False):
     x_train = []
     x_test = []
     y_train = []
@@ -143,7 +168,7 @@ def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model):
         elif review.stars >= 4:
             x_train.append(simon_vectors[i])
             y_train.append(1)
-        elif review.stars == 3:
+        elif three_classes & (review.stars == 3):
             x_train.append(simon_vectors[i])
             y_train.append(2)
         i += 1
@@ -157,7 +182,7 @@ def prepare_dataset_simon(train_reviews, test_reviews, train_model, test_model):
         elif review.stars >= 4:
             x_test.append(simon_vectors[i])
             y_test.append(1)
-        elif review.stars == 3:
+        elif three_classes & (review.stars == 3):
             x_test.append(simon_vectors[i])
             y_test.append(2)
         i += 1
