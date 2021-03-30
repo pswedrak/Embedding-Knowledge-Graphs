@@ -4,7 +4,7 @@ import gensim.downloader as api
 from nltk.corpus import wordnet as wn
 from scipy import spatial
 
-from common.constants import SIMILARITY_DATASET
+from common.constants import SIMILARITY_DATASET, SIMILARITY_RESULT
 from semantic_similarity.semantic_pair import SemanticPair
 
 
@@ -13,17 +13,19 @@ def main():
     a = 'cat'
     b = 'cat'
     pairs = load_similarity_dataset(SIMILARITY_DATASET)
-    for pair in pairs:
-        a = pair.word_a
-        b = pair.word_b
-        g, max_depth, rootnode = build_graph(a, b)
-        alpha = alpha_coef(a, b, g, max_depth, rootnode)
-        print(a, b)
-        print(pair.sim)
-        print(compute_similarity(wv_from_bin, a, b) * 10)
-        print(alpha)
-        print((compute_similarity(wv_from_bin, a, b) * 10 + alpha))
-        print((compute_similarity(wv_from_bin, a, b) * 10 - alpha))
+    with open(SIMILARITY_RESULT, 'w') as file:
+        for pair in pairs:
+            a = pair.word_a
+            b = pair.word_b
+            g, max_depth, rootnode = build_graph(a, b)
+            alpha = alpha_coef(a, b, g, max_depth, rootnode)
+            sim = compute_similarity(wv_from_bin, a, b)
+            file.write(a + " " + b + " " + pair.sim + " " + str(sim * 10))
+            file.write('\n')
+            file.write(a + " " + b + " " + str(sim * 10 + alpha))
+            file.write('\n')
+            file.write(b + " " + a + " " + str(sim * 10 - alpha))
+            file.write('\n')
 
 
 def load_similarity_dataset(filename):

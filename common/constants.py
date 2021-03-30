@@ -20,4 +20,5 @@ GLOVE_VECTORS = 'results/glove_vectors.txt'
 TRAIN_DATA_RATIO = 0.7
 
 SIMILARITY_DATASET = 'wordsim_similarity_goldstandard.txt'
+SIMILARITY_RESULT = 'similarity_results.txt'
 
