@@ -8,18 +8,19 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    #wv_from_bin = api.load("glove-twitter-100")
+    # wv_from_bin = api.load("glove-twitter-100")
     wv_from_bin = None
     report_similarity('pear', 'fruit', wv_from_bin)
     report_similarity('car', 'vehicle', wv_from_bin)
     report_similarity('phone', 'device', wv_from_bin)
 
 
-def report_similarity(a, b, wv_from_bin):
+def report_similarity(a, b, wv_from_bin, draw=False):
     g, max_depth, root, dist1, dist2, lch_concept, max_lch_path_length = build_graph(a, b)
-    # sim = compute_similarity(wv_from_bin, a, b)
-    draw_graph(g, a, b, dist1, dist2, lch_concept, max_lch_path_length)
-    plt.show()
+    sim = compute_similarity(wv_from_bin, a, b)
+    if draw:
+        draw_graph(g, a, b, dist1, dist2, lch_concept, max_lch_path_length)
+        plt.show()
 
 
 def load_similarity_dataset(filename):
