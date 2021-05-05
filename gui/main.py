@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QMainWindow, QTableWidgetItem
 
 from semantic_similarity.graph_creator import build_graph
+from semantic_similarity.graph_drawer import draw_graph
 from semantic_similarity.main import compute_similarity
 
 
@@ -26,6 +27,8 @@ class Main(QMainWindow):
 
         self.calculate_button = self.findChild(QtWidgets.QPushButton, 'calculate_button')
         self.calculate_button.clicked.connect(self.calculate)
+
+        self.visualize_checkbox = self.findChild(QtWidgets.QCheckBox, 'visualize_checkbox')
 
         self.show()
 
@@ -55,6 +58,9 @@ class Main(QMainWindow):
                 word1 = word1_item.text()
                 word2 = word2_item.text()
                 g, max_depth, root, dist1, dist2, lch_concept, max_lch_path_length = build_graph(word1, word2)
+
+                if self.visualize_checkbox.isChecked():
+                    draw_graph(g, word1, word2, dist1, dist2, lch_concept, max_lch_path_length)
 
                 sim = compute_similarity(self.wv_from_bin, word1, word2)
                 self.table.setItem(row, 2, QTableWidgetItem(str(round(10*sim, 2))))
