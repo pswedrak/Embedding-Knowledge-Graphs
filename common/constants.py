@@ -9,6 +9,9 @@ NEUTRAL_LEXICON = "results/lexicon/neutral_lexicon.txt"
 SIMON_MODEL_TRAIN = 'results/review_simon_train.txt'
 SIMON_MODEL_TEST = 'results/review_simon_test.txt'
 
+SIMON_MODEL_TRAIN_DISSYMMETRY = 'results/review_simon_train_dis.txt'
+SIMON_MODEL_TEST_DISSYMETRY = 'results/review_simon_test_dis.txt'
+
 WORD2VEC_FILE = 'results/review_word2vec.txt'
 DOC2VEC_FILE = 'results/review_doc2vec.txt'
 DOC2VEC_FILE_TEST = 'results/review_doc2vec_test.txt'
