@@ -2,7 +2,8 @@ from gensim.models import Doc2Vec, Word2Vec
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Dense, Embedding, SpatialDropout1D, LSTM
 from common.constants import DOC2VEC_MODEL, REVIEW_TOKENS_PATH, REVIEW_TEST_TOKENS_PATH, SIMON_MODEL_TRAIN, \
-    SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS, WORD2VEC_MODEL_THREE_CLASSES
+    SIMON_MODEL_TEST, WORD2VEC_MODEL, GLOVE_VECTORS, WORD2VEC_MODEL_THREE_CLASSES, SIMON_MODEL_TRAIN_DISSYMMETRY, \
+    SIMON_MODEL_TEST_DISSYMETRY
 from doc2vec.doc2vec import prepare_dataset_doc2vec
 from glove.glove import prepare_dataset_glove
 from lstm.lstm import prepare_dataset_lstm
@@ -20,10 +21,10 @@ def main():
     # evaluate_word2vec_pre_trained(True)
     # evaluate_word2vec_simon(True)
     # evaluate_word2vec_pretrained_simon(True)
-    # evaluate_simon(True)
+    evaluate_simon(False)
     # evaluate_glove_pretrained(True)
     # evaluate_doc2vec_simon(True)
-    evaluate_glove_pretrained_simon(True)
+    # evaluate_glove_pretrained_simon(True)
     # evaluate_glove(True)
     # evaluate_glove_simon(True)
     # evaluate_lstm()
@@ -96,7 +97,7 @@ def evaluate_simon(three_classes=False):
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     x_train, x_test, y_train, y_test = prepare_dataset_simon(train_reviews, test_reviews,
-                                                             SIMON_MODEL_TRAIN, SIMON_MODEL_TEST, True)
+                                                             SIMON_MODEL_TRAIN_DISSYMMETRY, SIMON_MODEL_TEST_DISSYMETRY, True)
 
     print(x_train.shape)
     training_acc = []

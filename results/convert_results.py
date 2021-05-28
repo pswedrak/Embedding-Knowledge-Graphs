@@ -23,13 +23,13 @@ def convert_results(source, target):
 def store_vectors(filepath, vectors):
     with open(filepath, 'w') as file:
         for vector in vectors:
-            file.write(str(vector))
+            file.write(str(list(map(lambda x: float(x), vector))))
             file.write('\n')
 
 
 def main():
-    # convert_results(SIMON_MODEL_TRAIN_DISSYMMETRY, SIMON_MODEL_TRAIN_DISSYMMETRY_CORRECTED)
-    convert_results(SIMON_MODEL_TEST_DISSYMETRY, SIMON_MODEL_TEST_DISSYMETRY_CORRECTED)
+    convert_results(SIMON_MODEL_TRAIN_DISSYMMETRY, SIMON_MODEL_TRAIN_DISSYMMETRY_CORRECTED)
+    # convert_results(SIMON_MODEL_TEST_DISSYMETRY, SIMON_MODEL_TEST_DISSYMETRY_CORRECTED)
 
 
 if __name__ == "__main__":
