@@ -21,13 +21,13 @@ def main():
     # evaluate_word2vec_pre_trained(True)
     # evaluate_word2vec_simon(True)
     # evaluate_word2vec_pretrained_simon(True)
-    evaluate_simon(False)
+    # evaluate_simon(False)
     # evaluate_glove_pretrained(True)
     # evaluate_doc2vec_simon(True)
     # evaluate_glove_pretrained_simon(True)
     # evaluate_glove(True)
     # evaluate_glove_simon(True)
-    # evaluate_lstm()
+    evaluate_lstm()
     # evaluate_simon_lstm()
 
 
@@ -93,11 +93,12 @@ def define_lstm_model(size, input_length):
 
 
 def evaluate_simon(three_classes=False):
-    size = 150
+    size = 100
     train_reviews = read_reviews(REVIEW_TOKENS_PATH)
     test_reviews = read_reviews(REVIEW_TEST_TOKENS_PATH)
     x_train, x_test, y_train, y_test = prepare_dataset_simon(train_reviews, test_reviews,
-                                                             SIMON_MODEL_TRAIN_DISSYMMETRY, SIMON_MODEL_TEST_DISSYMETRY, True)
+                                                             SIMON_MODEL_TRAIN_DISSYMMETRY, SIMON_MODEL_TEST_DISSYMETRY,
+                                                             three_classes)
 
     print(x_train.shape)
     training_acc = []

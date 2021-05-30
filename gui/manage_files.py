@@ -33,7 +33,10 @@ class FileManager(QWidget):
                     word2 = words[1][:-1]
 
                     g, max_depth, root, dist1, dist2, lch_concept, max_lch_path_length = build_graph(word1, word2)
-                    alpha_coef = (dist1 - dist2) / max_lch_path_length
+                    if max_lch_path_length != 0:
+                        alpha_coef = (dist1 - dist2) / max_lch_path_length
+                    else:
+                        alpha_coef = 0
                     sim = compute_similarity(self.wv_from_bin, word1, word2)
 
                     report.write(word1 + ' ' + word2 + ' ' + str(alpha_coef) + ' ' + str(10*sim))

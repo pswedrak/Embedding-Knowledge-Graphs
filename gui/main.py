@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         uic.loadUi(ui_file, self)
 
         self.wv_from_bin = api.load("glove-twitter-100")
-        # self.wv_from_bin = None
+        #self.wv_from_bin = None
 
         self.action_words = self.findChild(QtWidgets.QAction, 'action_words')
         self.action_words.triggered.connect(self.handle_action_words)
